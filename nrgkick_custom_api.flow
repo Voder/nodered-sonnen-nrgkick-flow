@@ -1,0 +1,244 @@
+[
+    {
+        "id": "8afafe4476fc951b",
+        "type": "tab",
+        "label": "Nrgkick Custom API",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "da38679d38fa327d",
+        "type": "http in",
+        "z": "8afafe4476fc951a",
+        "name": "/api/v1/info.json",
+        "url": "/api/v1/info.json",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "36c5044d8c5a78e3"
+            ]
+        ]
+    },
+    {
+        "id": "36c5044d8c5a78e3",
+        "type": "template",
+        "z": "8afafe4476fc951a",
+        "name": "deviceInfo",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "json",
+        "syntax": "mustache",
+        "template": "{\n    \"device_info\": {\n        \"inverters\": {\n            \"0\": {\n                \"name\": \"Sonneninverter\",\n                \"model\": \"SonneninverterModel\",\n                \"serial\": \"0123456789\",\n                \"max_dc_w\": 20000,\n                \"max_ac_w\": 19500\n            }\n        },\n        \"energy_meters\": {\n            \"0\": {\n                \"name\": \"Sonnenmeter\",\n                \"model\": \"SonnenmeterModel\",\n                \"serial\": \"01234567890\",\n                \"location\": 1\n            }\n        },\n        \"batteries\": {\n            \"0\": {\n                \"name\": \"Sonnenbatterie\",\n                \"model\": \"SonnenbatterieModel\",\n                \"serial\": \"01234567890\",\n                \"capacity_wh\": 6000\n            }\n        }\n    }\n}\n",
+        "output": "str",
+        "x": 310,
+        "y": 100,
+        "wires": [
+            [
+                "a7c7e0225e8fa4a6"
+            ]
+        ]
+    },
+    {
+        "id": "ec4c061e06ed3d63",
+        "type": "http response",
+        "z": "8afafe4476fc951a",
+        "name": "Status 200",
+        "statusCode": "200",
+        "headers": {},
+        "x": 710,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "a7c7e0225e8fa4a6",
+        "type": "change",
+        "z": "8afafe4476fc951a",
+        "name": "Http-Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "headers.connection",
+                "pt": "msg",
+                "to": "close",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 100,
+        "wires": [
+            [
+                "ec4c061e06ed3d63"
+            ]
+        ]
+    },
+    {
+        "id": "73b8224e6f6cbd72",
+        "type": "http request",
+        "z": "8afafe4476fc951a",
+        "name": "Sonnenbatterie Status",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://192.168.1.133:8080/api/v1/status",
+        "tls": "",
+        "persist": true,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 300,
+        "y": 380,
+        "wires": [
+            [
+                "73dc1257e556fb13"
+            ]
+        ]
+    },
+    {
+        "id": "48143917476eeb0c",
+        "type": "http in",
+        "z": "8afafe4476fc951a",
+        "name": "/api/v1/values.json",
+        "url": "/api/v1/values.json",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 260,
+        "wires": [
+            [
+                "73b8224e6f6cbd72"
+            ]
+        ]
+    },
+    {
+        "id": "481433b139f1209e",
+        "type": "template",
+        "z": "8afafe4476fc951a",
+        "name": "values",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "json",
+        "syntax": "mustache",
+        "template": "{\n    \"device_values\": {\n        \"inverters\": {\n            \"0\": {\n                \"inv_power_ac_w\": {{ payload.InvPower_AC_W }},\n                \"battery_connected\": true\n            }\n        },\n        \"energy_meters\": {\n            \"0\": {\n                \"grid_power_w\": {{ payload.GridPower_W }}\n            }\n        },\n        \"batteries\": {\n            \"0\": {\n                \"bat_power_w\": {{ payload.Pac_total_W }},\n                \"soc\": {{ payload.USOC }},\n                \"mode\": 0\n            }\n        },\n        \"load_power_w\": {{ payload.Consumption_W }}\n    }\n}\n",
+        "output": "json",
+        "x": 330,
+        "y": 260,
+        "wires": [
+            [
+                "70c8edb271c6dbfb"
+            ]
+        ]
+    },
+    {
+        "id": "70c8edb271c6dbfb",
+        "type": "change",
+        "z": "8afafe4476fc951a",
+        "name": "Http-Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "headers.connection",
+                "pt": "msg",
+                "to": "close",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 260,
+        "wires": [
+            [
+                "4f3e16c076e407a3"
+            ]
+        ]
+    },
+    {
+        "id": "4f3e16c076e407a3",
+        "type": "http response",
+        "z": "8afafe4476fc951a",
+        "name": "Status 200",
+        "statusCode": "200",
+        "headers": {},
+        "x": 710,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "73dc1257e556fb13",
+        "type": "change",
+        "z": "8afafe4476fc951a",
+        "name": "transform sonnen values",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload.GridPower_W",
+                "pt": "msg",
+                "to": "payload.GridFeedIn_W * -1",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "payload.InvPower_AC_W",
+                "pt": "msg",
+                "to": "payload.Production_W + payload.Pac_total_W",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 420,
+        "wires": [
+            [
+                "481433b139f1209e"
+            ]
+        ]
+    }
+]
